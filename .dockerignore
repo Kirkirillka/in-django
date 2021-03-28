@@ -1,0 +1,13 @@
+venv
+.idea
+.vscode
+
+runtime.txt
+Procfile
+Pipfile.lock
+Pipfile
+Dockerfile
+docker-compose.yml
+.gitignore
+venv
+staticfiles

@@ -1,0 +1,13 @@
+FROM python:3 as build
+
+WORKDIR /app
+
+ADD requirements.txt .
+RUN pip install -r requirements.txt
+
+
+FROM build as run
+
+ADD . .
+
+ENTRYPOINT [ "celery" , "-A", "InDjango", "worker", "--beat"]
