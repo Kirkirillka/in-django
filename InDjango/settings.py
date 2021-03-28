@@ -14,8 +14,15 @@ import os
 import datetime
 import django_heroku
 
+import environ
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 from django.urls import reverse_lazy
+
+# https://medium.com/@alicecampkin/how-to-set-up-environment-variables-in-django-f3c4db78c55f
+# Initialise environment variables
+env = environ.Env()
+environ.Env.read_env()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -26,7 +33,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'b6984509ce8e4706cb55765429f74787e174121e70c0e413'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = env.bool("DEBUG",default=False)
 
 ALLOWED_HOSTS = ['in-django.herokuapp.com']
 
@@ -81,9 +88,27 @@ WSGI_APPLICATION = 'InDjango.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
+    'sqlite3': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    },
+    "default": {
+        'ENGINE': 'django.db.backends.postgresql',
+        'HOST': env("POSTGRESQL_DB_HOST", default="localhost"),
+        'NAME': env("POSTGRESQL_DB_NAME",default="postgres"),
+        'USER': env("POSTGRESQL_DB_USER_NAME",default="postgres"),
+        'PASSWORD': env("POSTGRESQL_DB_USER_PASS",default="postgres"),
+    }
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": env("REDIS_CACHE_URL",default="redis://localhost:6379/0"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient"
+        },
+        "KEY_PREFIX": "example"
     }
 }
 
@@ -156,7 +181,7 @@ SIMPLE_JWT = {
 
 AUTH_USER_MODEL = 'in_django_site.InDjangoUser'
 
-CELERY_BROKER_URL = 'redis://h:p6f48cc47ce16dd4f79a53b92b24f5ba9da298bbd9bad3ea31a89deb338ff8dd0@ec2-52-31-134-132.eu-west-1.compute.amazonaws.com:17949'
+CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="amqp://guest:guest@localhost:5672/")
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
